@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     steps:
@@ -19,14 +20,23 @@ jobs:
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
-        extensions: mbstring, intl, dom, xml, json
+        php-version: 8.2
+        extensions: mbstring, intl, dom, xml, xdebug
 
-    - name: Install Composer dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest
+    - name: Install dependencies
+      run: composer install
 
-    - name: Run PHPUnit tests
-      run: ./vendor/bin/phpunit --configuration phpunit.xml
+    - name: Run PHPUnit
+      run: |
+        vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
 
-    - name: Run Behat tests
-      run: ./vendor/bin/behat --config behat.yml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        files: coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+
+    - name: Run Behat
+      run: vendor/bin/behat
